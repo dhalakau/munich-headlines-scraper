@@ -22,7 +22,6 @@ def fetch_html(url: str) -> str:
     # raise_for_status() throws an error if HTTP code is 4xx/5xx
     resp.raise_for_status()
 
-    # resp.text contains the HTML of the page
     return resp.text
 
 def extract_titles(html: str) -> list[str]:
@@ -31,10 +30,8 @@ def extract_titles(html: str) -> list[str]:
     Returns a list of strings.
     """
 
-    # create a BeautifulSoup parser object (using built-in Python parser)
     soup = BeautifulSoup(html, "html.parser")
 
-    # CSS selectors to try — each one targets possible headline formats
     selectors = [
         "h2", "h3",                 # most headlines are in h2/h3 tags
         "article h2", "article h3", # headlines inside <article> blocks
@@ -42,9 +39,9 @@ def extract_titles(html: str) -> list[str]:
         '[data-testid="headline"]', # fallback selector sometimes used
     ]
 
-    # --- storage ---
-    titles = []   # list for cleaned, unique headlines
-    seen = set()  # set to avoid duplicates (fast lookup)
+    # storage
+    titles = []
+    seen = set()  #(fast lookup)
 
     # helper: collapse whitespace (" \n " → " ")
     def clean(txt: str) -> str:
@@ -52,15 +49,12 @@ def extract_titles(html: str) -> list[str]:
 
     # loop through each selector
     for sel in selectors:
-        # soup.select(sel) returns all elements matching the CSS selector
         for el in soup.select(sel):
-            # get the text inside the element, strip leading/trailing spaces
             text = clean(el.get_text(strip=True))
 
-            # filter out very short strings (like nav items "Home", "SZ")
             if len(text) >= 8 and text not in seen:
-                seen.add(text)      # mark this headline as seen
-                titles.append(text) # add it to our list
+                seen.add(text)
+                titles.append(text)
 
     return titles
 
